@@ -5,9 +5,10 @@ module.exports = function(robot) {
 
   robot.respond(/deploy (me|moi)/i, queueUser);
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
-  robot.respond(/deploy (forget (it|me)|nevermind)/i, forgetUser);
+  robot.respond(/deploy (forget (it|me)|nevermind)/i, forgetMe);
   robot.respond(/deploy (current|who\'s (deploying|at bat))/i, whosDeploying);
   robot.respond(/deploy (next|who\'s (next|on first|on deck))/i, whosNext);
+  robot.respond(/deploy (remove|kick|sayonara) (.*)/i, whosNext);
   robot.respond(/deploy (list)/i, listQueue);
   robot.respond(/deploy (dump|debug)/i, queueDump);
 
@@ -91,7 +92,7 @@ module.exports = function(robot) {
    * Removes first instance of the user from the queue
    * @param res
    */
-  function forgetUser(res) {
+  function forgetMe(res) {
     var user = res.message.user.name
       , queue = robot.brain.deployQueue
       , index = _.indexOf(queue, user);
@@ -103,6 +104,29 @@ module.exports = function(robot) {
     } else {
       _.pullAt(queue, index);
       res.reply('Alright, I took you out of the queue. Come back soon!');
+    }
+  }
+
+  /**
+   * Removes all references to a user from the queue
+   * @param res
+   */
+  function removeUser(res) {
+    var user = res.match[1]
+      , queue = robot.brain.deployQueue
+      , notifyNextUser = false;
+
+    if(queue[0] === user) {
+      notifyNextUser = true;
+    }
+
+    _.remove(queue, function(val) {
+      return val === user;
+    });
+
+    res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
+    if(notifyNextUser) {
+      res.send('@' + queue[0] + ' you\'re up!');
     }
   }
 
