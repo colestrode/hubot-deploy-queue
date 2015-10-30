@@ -7,6 +7,7 @@ module.exports = function(robot) {
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
   robot.respond(/deploy (forget (it|me)|nevermind)/i, forgetUser);
   robot.respond(/deploy (next|who\'s (next|on first))/i, whosNext);
+  robot.respond(/deploy (dump|debug)/i, queueDump);
 
   /**
    * Add a user to the queue
@@ -61,7 +62,7 @@ module.exports = function(robot) {
     if(queue.length === 0) {
       res.send('Nobodyz!');
     } else if (user === queue[1]) {
-      res.send('You\'re up next ' + user + '! Get ready!');
+      res.reply('You\'re up next! Get ready!');
     } else {
       res.send(queue[1] + ' is on deck.');
     }
@@ -82,6 +83,10 @@ module.exports = function(robot) {
       robot.brain.deployQueue = queue = _.pullAt(queue, index);
       res.reply('Alright, I took you out of the queue. Come back soon!');
     }
+  }
+
+  function queueDump(res) {
+    res.reply(JSON.stringify(robot.brain.deployQueue, null, 2));
   }
 };
 
