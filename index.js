@@ -6,7 +6,8 @@ module.exports = function(robot) {
   robot.respond(/deploy (me|moi)/i, queueUser);
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
   robot.respond(/deploy (forget (it|me)|nevermind)/i, forgetUser);
-  robot.respond(/deploy (next|who\'s (next|on first))/i, whosNext);
+  robot.respond(/deploy (current|who\'s (deploying|at bat))/i, whosDeploying);
+  robot.respond(/deploy (next|who\'s (next|on first|on deck))/i, whosNext);
   robot.respond(/deploy (list)/i, listQueue);
   robot.respond(/deploy (dump|debug)/i, queueDump);
 
@@ -53,6 +54,23 @@ module.exports = function(robot) {
   }
 
   /**
+   * Who's deploying now?
+   * @param res
+   */
+  function whosDeploying(res) {
+    var user = res.message.user.name
+      , queue = robot.brain.deployQueue;
+
+    if(queue.length === 0) {
+      res.send('Nobodyz!');
+    } else if (user === queue[0]) {
+      res.reply('You\'re up next! Get ready!');
+    } else {
+      res.send(queue[0] + ' is deploying.');
+    }
+  }
+
+  /**
    * Who's up next?
    * @param res
    */
@@ -80,6 +98,8 @@ module.exports = function(robot) {
 
     if(index < 0) {
       res.reply('No sweat! You weren\'t even in the queue :)');
+    } else if(index === 0) {
+      res.reply('You\'re deploying right now! Did you mean `deploy done`?');
     } else {
       _.pullAt(queue, index);
       res.reply('Alright, I took you out of the queue. Come back soon!');
