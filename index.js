@@ -7,6 +7,7 @@ module.exports = function(robot) {
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
   robot.respond(/deploy (forget (it|me)|nevermind)/i, forgetUser);
   robot.respond(/deploy (next|who\'s (next|on first))/i, whosNext);
+  robot.respond(/deploy (list)/i, listQueue);
   robot.respond(/deploy (dump|debug)/i, queueDump);
 
   /**
@@ -45,7 +46,7 @@ module.exports = function(robot) {
     } else if(queue[0] !== user) {
       res.send('Nice try ' + user + ', no cutting!');
     } else {
-      robot.brain.deployQueue = queue = _.pullAt(queue, 0);
+      _.pullAt(queue, 0);
       res.send('Great job ' + user + '! I\'ll let the next person know.');
       res.send('@' + queue[0] + ' you\'re up!');
     }
@@ -80,11 +81,29 @@ module.exports = function(robot) {
     if(index < 0) {
       res.reply('No sweat! You weren\'t even in the queue :)');
     } else {
-      robot.brain.deployQueue = queue = _.pullAt(queue, index);
+      _.pullAt(queue, index);
       res.reply('Alright, I took you out of the queue. Come back soon!');
     }
   }
 
+  /**
+   * Prints a list of users in the queue
+   * @param res
+   */
+  function listQueue(res) {
+    var queue = robot.brain.deployQueue;
+
+    if(queue.length < 1) {
+      res.reply('Nobodyz!');
+    } else {
+      res.reply('Here\'s who\'s in the queue: ' + robot.brain.deployQueue.join(', ') + '.');
+    }
+  }
+
+  /**
+   * Dumps the queue to the channel for debugging
+   * @param res
+   */
   function queueDump(res) {
     res.reply(JSON.stringify(robot.brain.deployQueue, null, 2));
   }
