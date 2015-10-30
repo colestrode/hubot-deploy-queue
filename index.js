@@ -39,11 +39,11 @@ module.exports = function(robot) {
   function dequeueUser(res) {
     var user = res.message.user.name
       , queue = robot.brain.deployQueue
-      , found = _.find(queue, user);
+      , userIndex = _.indexOf(queue, user);
 
-    if(!found) {
+    if(userIndex < 0) {
       res.send('Ummm, this is a little embarrassing, but you aren\'t in the queue :grimacing:');
-    } else if(queue[0] !== user) {
+    } else if(userIndex > 0) {
       res.send('Nice try ' + user + ', no cutting!');
     } else {
       _.pullAt(queue, 0);
