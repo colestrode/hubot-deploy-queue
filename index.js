@@ -13,7 +13,7 @@ module.exports = function(robot) {
    * @param res
    */
   function queueUser(res) {
-    var user = res.message.user
+    var user = res.message.user.name
       , queue = robot.brain.deployQueue
       , length = queue.length;
 
@@ -35,7 +35,7 @@ module.exports = function(robot) {
    * @param res
    */
   function dequeueUser(res) {
-    var user = res.message.user
+    var user = res.message.user.name
       , queue = robot.brain.deployQueue
       , found = _.find(queue, user);
 
@@ -46,7 +46,7 @@ module.exports = function(robot) {
     } else {
       robot.brain.deployQueue = queue = _.pullAt(queue, 0);
       res.send('Great job ' + user + '! I\'ll let the next person know.');
-      res.send(queue[0] + ' you\'re up!');
+      res.send('@' + queue[0] + ' you\'re up!');
     }
   }
 
@@ -55,7 +55,7 @@ module.exports = function(robot) {
    * @param res
    */
   function whosNext(res) {
-    var user = res.message.user
+    var user = res.message.user.name
       , queue = robot.brain.deployQueue;
 
     if(queue.length === 0) {
@@ -72,7 +72,7 @@ module.exports = function(robot) {
    * @param res
    */
   function forgetUser(res) {
-    var user = res.message.user
+    var user = res.message.user.name
       , queue = robot.brain.deployQueue
       , index = _.indexOf(queue, user);
 
