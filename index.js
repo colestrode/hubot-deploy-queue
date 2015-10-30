@@ -23,9 +23,9 @@ module.exports = function(robot) {
 
     queue.push(user);
 
-    if(length < 1) {
+    if (length < 1) {
       res.send('Go for it ' + user + '!');
-    } else if(length === 1) {
+    } else if (length === 1) {
       res.send('Alrighty, ' + user + ', you\'re up next!');
     } else {
       res.send('Cool, There\'s a couple of people ahead of you, so I\'ll let you know when you\'re up.');
@@ -41,14 +41,14 @@ module.exports = function(robot) {
       , queue = robot.brain.deployQueue
       , userIndex = _.indexOf(queue, user);
 
-    if(userIndex < 0) {
+    if (userIndex < 0) {
       res.send('Ummm, this is a little embarrassing, but you aren\'t in the queue :grimacing:');
-    } else if(userIndex > 0) {
+    } else if (userIndex > 0) {
       res.send('Nice try ' + user + ', no cutting!');
     } else {
       _.pullAt(queue, 0);
       res.send('Great job ' + user + '! I\'ll let the next person know.');
-      if(queue.length > 0) {
+      if (queue.length > 0) {
         res.send('@' + queue[0] + ' you\'re up!');
       }
     }
@@ -62,7 +62,7 @@ module.exports = function(robot) {
     var user = res.message.user.name
       , queue = robot.brain.deployQueue;
 
-    if(queue.length === 0) {
+    if (queue.length === 0) {
       res.send('Nobodyz!');
     } else if (user === queue[0]) {
       res.reply('You\'re up next! Get ready!');
@@ -79,7 +79,7 @@ module.exports = function(robot) {
     var user = res.message.user.name
       , queue = robot.brain.deployQueue;
 
-    if(queue.length === 0) {
+    if (queue.length === 0) {
       res.send('Nobodyz!');
     } else if (user === queue[1]) {
       res.reply('You\'re up next! Get ready!');
@@ -97,9 +97,9 @@ module.exports = function(robot) {
       , queue = robot.brain.deployQueue
       , index = _.indexOf(queue, user);
 
-    if(index < 0) {
+    if (index < 0) {
       res.reply('No sweat! You weren\'t even in the queue :)');
-    } else if(index === 0) {
+    } else if (index === 0) {
       res.reply('You\'re deploying right now! Did you mean `deploy done`?');
     } else {
       _.pullAt(queue, index);
@@ -116,7 +116,7 @@ module.exports = function(robot) {
       , queue = robot.brain.deployQueue
       , notifyNextUser = false;
 
-    if(queue[0] === user) {
+    if (queue[0] === user) {
       notifyNextUser = true;
     }
 
@@ -125,7 +125,7 @@ module.exports = function(robot) {
     });
 
     res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
-    if(notifyNextUser) {
+    if (notifyNextUser) {
       res.send('@' + queue[0] + ' you\'re up!');
     }
   }
@@ -137,7 +137,7 @@ module.exports = function(robot) {
   function listQueue(res) {
     var queue = robot.brain.deployQueue;
 
-    if(queue.length < 1) {
+    if (queue.length < 1) {
       res.send('Nobodyz!');
     } else {
       res.send('Here\'s who\'s in the queue: ' + robot.brain.deployQueue.join(', ') + '.');
