@@ -94,9 +94,9 @@ module.exports = function(robot) {
     var queue = robot.brain.deployQueue;
 
     if(queue.length < 1) {
-      res.reply('Nobodyz!');
+      res.send('Nobodyz!');
     } else {
-      res.reply('Here\'s who\'s in the queue: ' + robot.brain.deployQueue.join(', ') + '.');
+      res.send('Here\'s who\'s in the queue: ' + robot.brain.deployQueue.join(', ') + '.');
     }
   }
 
@@ -105,7 +105,7 @@ module.exports = function(robot) {
    * @param res
    */
   function queueDump(res) {
-    res.reply(JSON.stringify(robot.brain.deployQueue, null, 2));
+    res.send(JSON.stringify(robot.brain.deployQueue, null, 2));
   }
 };
 
