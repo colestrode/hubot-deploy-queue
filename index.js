@@ -3,22 +3,19 @@ var _ = require('lodash');
 module.exports = function(robot) {
   robot.brain.deployQueue = [];
 
-  robot.respond(/^deploy me$/i, queueUser);
+  robot.respond(/^deploy me/i, queueUser);
 
-  robot.respond(/^deploy done$/i, dequeueUser);
+  robot.respond(/^deploy done/i, dequeueUser);
   robot.respond(/^deploy complete/i, dequeueUser);
   robot.respond(/^deploy donzo/i, dequeueUser);
 
-  robot.respond(/^deploy forget it$/i, forgetUser);
-  robot.respond(/^deploy forget me$/i, forgetUser);
-  robot.respond(/^deploy nevermind$/i, forgetUser);
+  robot.respond(/^deploy forget it/i, forgetUser);
+  robot.respond(/^deploy forget me/i, forgetUser);
+  robot.respond(/^deploy nevermind/i, forgetUser);
 
-  robot.respond(/^deploy next$/i, whosNext);
-  robot.respond(/^deploy next\?$/i, whosNext);
-  robot.respond(/^deploy who\'s next$/i, whosNext);
-  robot.respond(/^deploy who\'s next\?$/i, whosNext);
-  robot.respond(/^deploy who\'s on first$/i, whosNext);
-  robot.respond(/^deploy who\'s on first\?$/i, whosNext);
+  robot.respond(/^deploy next/i, whosNext);
+  robot.respond(/^deploy who\'s next/i, whosNext);
+  robot.respond(/^deploy who\'s on first/i, whosNext);
 
 };
 
