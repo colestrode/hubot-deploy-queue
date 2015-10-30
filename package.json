@@ -1,0 +1,19 @@
+{
+  "name": "deploy-queue",
+  "version": "0.0.1",
+  "description": "A real simple deploy queue",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "hubot",
+    "deploy",
+    "queue"
+  ],
+  "author": "Cole Furfaro-Strode",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^3.10.1"
+  }
+}

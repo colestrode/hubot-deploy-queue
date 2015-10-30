@@ -1,0 +1,89 @@
+var _ = require('lodash');
+
+module.exports = function(robot) {
+  robot.brain.deployQueue = [];
+
+  robot.respond('/^deploy me$/i', queueUser);
+
+  robot.respond('/^deploy done$/i', dequeueUser);
+  robot.respond('/^deploy complete/i', dequeueUser);
+  robot.respond('/^deploy donzo/i', dequeueUser);
+
+  robot.respond('/^deploy forget it$/i', forgetUser);
+  robot.respond('/^deploy forget me$/i', forgetUser);
+  robot.respond('/^deploy nevermind$/i', forgetUser);
+};
+
+/**
+ * Add a user to the queue
+ * @param res
+ */
+function queueUser(res) {
+  var user = res.message.user
+    , queue = robot.brain.deployQueue
+    , length = queue.length;
+
+  queue.push(user);
+
+  if(length < 1) {
+    res.send('Go for it ' + user + '!');
+  } else if(length === 1) {
+    res.send('Alrighty, ' + user + ', you\'re up next!');
+  } else {
+    res.send('Cool, There\'s a couple of people ahead of you, so I\'ll let you know when you\'re up.');
+  }
+}
+
+/**
+ * Removes a user from the queue if they exist and notifies the next user
+ * @param res
+ */
+function dequeueUser(res) {
+  var user = res.message.user
+    , queue = robot.brain.deployQueue
+    , found = _.find(queue, user);
+
+  if(!found) {
+    res.send('Ummm, this is a little embarrassing, but you aren\'t in the queue :grimacing:');
+  } else if(queue[0] !== user) {
+    res.send('Nice try ' + user + ', no cutting!');
+  } else {
+    robot.brain.deployQueue = queue = _.pullAt(queue, 0);
+    res.send('Great job ' + user + '! I\'ll let the next person know.');
+    res.send(queue[0] + ' you\'re up!');
+  }
+}
+
+/**
+ * Who's up next?
+ * @param res
+ */
+function whosNext(res) {
+  var user = res.message.user
+    , queue = robot.brain.deployQueue;
+
+  if(queue.length === 0) {
+    res.send('Nobodyz!');
+  } else if (user === queue[0]) {
+    res.send('You\'re up next ' + user + '! Get ready!');
+  } else {
+    res.send(queue[0] + ' is on deck.');
+  }
+}
+
+/**
+ * Removes first instance of the user from the queue
+ * @param res
+ */
+function forgetUser(res) {
+  var user = res.message.user
+    , queue = robot.brain.deployQueue
+    , index = _.indexOf(queue, user);
+
+  if(index < 0) {
+    res.reply('No sweat! You weren\'t even in the queue :)');
+  } else {
+    robot.brain.deployQueue = queue = _.pullAt(queue, index);
+    res.reply('Alright, I took you out of the queue. Come back soon!');
+  }
+}
