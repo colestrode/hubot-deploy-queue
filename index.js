@@ -22,8 +22,6 @@ module.exports = function(robot) {
 
     queue.push(user);
 
-    res.reply(JSON.stringify(user, null, 2));
-
     if(length < 1) {
       res.send('Go for it ' + user + '!');
     } else if(length === 1) {
@@ -49,7 +47,9 @@ module.exports = function(robot) {
     } else {
       _.pullAt(queue, 0);
       res.send('Great job ' + user + '! I\'ll let the next person know.');
-      res.send('@' + queue[0] + ' you\'re up!');
+      if(queue.length > 0) {
+        res.send('@' + queue[0] + ' you\'re up!');
+      }
     }
   }
 
