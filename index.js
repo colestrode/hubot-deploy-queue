@@ -16,9 +16,11 @@ module.exports = function(robot) {
     var user = res.message.user
       , queue = robot.brain.deployQueue
       , length = queue.length;
-  
+
     queue.push(user);
-  
+
+    res.reply(JSON.stringify(user, null, 2));
+
     if(length < 1) {
       res.send('Go for it ' + user + '!');
     } else if(length === 1) {
@@ -27,7 +29,7 @@ module.exports = function(robot) {
       res.send('Cool, There\'s a couple of people ahead of you, so I\'ll let you know when you\'re up.');
     }
   }
-  
+
   /**
    * Removes a user from the queue if they exist and notifies the next user
    * @param res
@@ -36,7 +38,7 @@ module.exports = function(robot) {
     var user = res.message.user
       , queue = robot.brain.deployQueue
       , found = _.find(queue, user);
-  
+
     if(!found) {
       res.send('Ummm, this is a little embarrassing, but you aren\'t in the queue :grimacing:');
     } else if(queue[0] !== user) {
@@ -47,7 +49,7 @@ module.exports = function(robot) {
       res.send(queue[0] + ' you\'re up!');
     }
   }
-  
+
   /**
    * Who's up next?
    * @param res
@@ -55,7 +57,7 @@ module.exports = function(robot) {
   function whosNext(res) {
     var user = res.message.user
       , queue = robot.brain.deployQueue;
-  
+
     if(queue.length === 0) {
       res.send('Nobodyz!');
     } else if (user === queue[1]) {
@@ -64,7 +66,7 @@ module.exports = function(robot) {
       res.send(queue[1] + ' is on deck.');
     }
   }
-  
+
   /**
    * Removes first instance of the user from the queue
    * @param res
@@ -73,7 +75,7 @@ module.exports = function(robot) {
     var user = res.message.user
       , queue = robot.brain.deployQueue
       , index = _.indexOf(queue, user);
-  
+
     if(index < 0) {
       res.reply('No sweat! You weren\'t even in the queue :)');
     } else {
