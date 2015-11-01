@@ -1,7 +1,11 @@
-var _ = require('lodash');
+var _ = require('lodash')
+  , queue = require('./lib/queue');
+
 
 module.exports = function(robot) {
-  robot.brain.deployQueue = [];
+  robot.brain.on('loaded', function() {
+    queue.init(robot.brain);
+  });
 
   robot.respond(/deploy (me|moi)/i, queueUser);
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
@@ -12,24 +16,32 @@ module.exports = function(robot) {
   robot.respond(/deploy (list)/i, listQueue);
   robot.respond(/deploy (dump|debug)/i, queueDump);
 
+  robot.respond(/deploy ping/i, function(res) {
+    res.send('deploy pong');
+    res.reply('deploy reply pong');
+  });
+
   /**
    * Add a user to the queue
    * @param res
    */
   function queueUser(res) {
     var user = res.message.user.name
-      , queue = robot.brain.deployQueue
-      , length = queue.length;
+      , length = queue.length();
 
     queue.push(user);
 
-    if(length < 1) {
-      res.send('Go for it ' + user + '!');
-    } else if(length === 1) {
-      res.send('Alrighty, ' + user + ', you\'re up next!');
-    } else {
-      res.send('Cool, There\'s a couple of people ahead of you, so I\'ll let you know when you\'re up.');
+    if (length === 0 && queue.isCurrent(user)) {
+      res.reply('Go for it!');
+      return;
     }
+
+    if (length === 1 && queue.isNext(user)) {
+      res.reply('Alrighty, you\'re up next!');
+      return;
+    }
+
+    res.reply('Cool, There\'s ' + (length - 1) + ' person(s) ahead of you. I\'ll let you know when you\'re up.');
   }
 
   /**
@@ -37,20 +49,24 @@ module.exports = function(robot) {
    * @param res
    */
   function dequeueUser(res) {
-    var user = res.message.user.name
-      , queue = robot.brain.deployQueue
-      , userIndex = _.indexOf(queue, user);
+    var user = res.message.user.name;
 
-    if(userIndex < 0) {
-      res.send('Ummm, this is a little embarrassing, but you aren\'t in the queue :grimacing:');
-    } else if(userIndex > 0) {
-      res.send('Nice try ' + user + ', no cutting!');
-    } else {
-      _.pullAt(queue, 0);
-      res.send('Great job ' + user + '! I\'ll let the next person know.');
-      if(queue.length > 0) {
-        res.send('@' + queue[0] + ' you\'re up!');
-      }
+    if (!queue.contains(user)) {
+      res.reply('Ummm, this is a little embarrassing, but you aren\'t in the queue :grimacing:');
+      return;
+    }
+
+    if (!queue.isCurrent(user)) {
+      res.reply('Nice try, but it\'s not your turn yet');
+      return;
+    }
+
+    queue.advance();
+    res.reply('thanks');
+
+    if (!queue.isEmpty()) {
+      // Send DM to next in line if the queue isn't empty
+      notifyUser(queue.current());
     }
   }
 
@@ -59,15 +75,14 @@ module.exports = function(robot) {
    * @param res
    */
   function whosDeploying(res) {
-    var user = res.message.user.name
-      , queue = robot.brain.deployQueue;
+    var user = res.message.user.name;
 
-    if(queue.length === 0) {
-      res.send('Nobodyz!');
-    } else if (user === queue[0]) {
-      res.reply('You\'re up next! Get ready!');
+    if (queue.isEmpty()) {
+      res.reply('Nobodyz!');
+    } else if (isCurrent(user)) {
+      res.reply('It\'s you. _You\'re_ deploying. Right now.');
     } else {
-      res.send(queue[0] + ' is deploying.');
+      res.send(queue.current() + ' is deploying.');
     }
   }
 
@@ -76,15 +91,14 @@ module.exports = function(robot) {
    * @param res
    */
   function whosNext(res) {
-    var user = res.message.user.name
-      , queue = robot.brain.deployQueue;
+    var user = res.message.user.name;
 
-    if(queue.length === 0) {
+    if (queue.isEmpty()) {
       res.send('Nobodyz!');
-    } else if (user === queue[1]) {
+    } else if (queue.isNext(user)) {
       res.reply('You\'re up next! Get ready!');
     } else {
-      res.send(queue[1] + ' is on deck.');
+      res.send(queue.next() + ' is on deck.');
     }
   }
 
@@ -93,18 +107,21 @@ module.exports = function(robot) {
    * @param res
    */
   function forgetMe(res) {
-    var user = res.message.user.name
-      , queue = robot.brain.deployQueue
-      , index = _.indexOf(queue, user);
+    var user = res.message.user.name;
 
-    if(index < 0) {
+    if (!queue.contains(user)) {
       res.reply('No sweat! You weren\'t even in the queue :)');
-    } else if(index === 0) {
-      res.reply('You\'re deploying right now! Did you mean `deploy done`?');
-    } else {
-      _.pullAt(queue, index);
-      res.reply('Alright, I took you out of the queue. Come back soon!');
+      return;
     }
+
+    if (queue.isCurrent(user)) {
+      res.reply('You\'re deploying right now! Did you mean `deploy done`?');
+      return;
+    }
+
+    queue.removeOne(user);
+    res.reply('Alright, I took you out of the queue. Come back soon!');
+
   }
 
   /**
@@ -113,20 +130,13 @@ module.exports = function(robot) {
    */
   function removeUser(res) {
     var user = res.match[1]
-      , queue = robot.brain.deployQueue
-      , notifyNextUser = false;
-
-    if(queue[0] === user) {
-      notifyNextUser = true;
-    }
-
-    _.remove(queue, function(val) {
-      return val === user;
-    });
+      , notifyNextUser = queue.isCurrent(user)
+      , removed = queue.removeAll(user);
 
     res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
-    if(notifyNextUser) {
-      res.send('@' + queue[0] + ' you\'re up!');
+
+    if (notifyNextUser) {
+      notifyUser(queue.current());
     }
   }
 
@@ -135,12 +145,10 @@ module.exports = function(robot) {
    * @param res
    */
   function listQueue(res) {
-    var queue = robot.brain.deployQueue;
-
-    if(queue.length < 1) {
-      res.send('Nobodyz!');
+    if (queue.isEmpty()) {
+      res.send('Nobodyz! Like this: []');
     } else {
-      res.send('Here\'s who\'s in the queue: ' + robot.brain.deployQueue.join(', ') + '.');
+      res.send('Here\'s who\'s in the queue: ' + queue.get().join(', ') + '.');
     }
   }
 
@@ -149,7 +157,15 @@ module.exports = function(robot) {
    * @param res
    */
   function queueDump(res) {
-    res.send(JSON.stringify(robot.brain.deployQueue, null, 2));
+    res.send(JSON.stringify(queue.get(), null, 2));
+  }
+
+  /**
+   * Notify a user via DM that it's their turn
+   * @param user
+   */
+  function notifyUser(user) {
+    robot.messageRoom(user, 'Hey, you\'re turn to deploy!');
   }
 };
 
