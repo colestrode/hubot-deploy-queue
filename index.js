@@ -1,5 +1,4 @@
-var _ = require('lodash')
-  , queue = require('./lib/queue');
+var queue = require('./lib/queue');
 
 
 module.exports = function(robot) {
@@ -12,7 +11,7 @@ module.exports = function(robot) {
   robot.respond(/deploy (forget (it|me)|nevermind)/i, forgetMe);
   robot.respond(/deploy (current|who\'s (deploying|at bat))/i, whosDeploying);
   robot.respond(/deploy (next|who\'s (next|on first|on deck))/i, whosNext);
-  robot.respond(/deploy (remove|kick|sayonara) (.*)/i, whosNext);
+  robot.respond(/deploy (remove|kick|sayonara) (.*)/i, removeUser);
   robot.respond(/deploy (list)/i, listQueue);
   robot.respond(/deploy (dump|debug)/i, queueDump);
 
@@ -79,7 +78,7 @@ module.exports = function(robot) {
 
     if (queue.isEmpty()) {
       res.reply('Nobodyz!');
-    } else if (isCurrent(user)) {
+    } else if (queue.isCurrent(user)) {
       res.reply('It\'s you. _You\'re_ deploying. Right now.');
     } else {
       res.send(queue.current() + ' is deploying.');
@@ -130,8 +129,9 @@ module.exports = function(robot) {
    */
   function removeUser(res) {
     var user = res.match[1]
-      , notifyNextUser = queue.isCurrent(user)
-      , removed = queue.removeAll(user);
+      , notifyNextUser = queue.isCurrent(user);
+
+    queue.removeAll(user);
 
     res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
 
