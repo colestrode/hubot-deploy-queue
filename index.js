@@ -6,6 +6,7 @@ module.exports = function(robot) {
     queue.init(robot.brain);
   });
 
+  robot.respond(/deploy help/i, help);
   robot.respond(/deploy (me|moi)/i, queueUser);
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
   robot.respond(/deploy (forget (it|me)|nevermind)/i, forgetMe);
@@ -19,6 +20,24 @@ module.exports = function(robot) {
     res.send('deploy pong');
     res.reply('deploy reply pong');
   });
+
+  /**
+   * Help stuff
+   * @param res
+   */
+  function help(res) {
+    res.respond(
+      '`deploy me`: Add yourself to the deploy queue. Hubot give you a heads up when it\'s your turn\n' +
+      '`deploy done`: Say this when you\'re done and then Hubot will tell the next person. Or you could say `deploy complete` or `deploy donzo`.\n' +
+      '`deploy forget me`: Removes you from the queue. If you\'re on there more than once, then just removes your next turn. If you\'re on there more than once, you might think about slowing down and deploying a little less continuously. Or you could say `deploy forget it` or `deploy nevermind`.\n' +
+      '`deploy remove _user_`: Removes a user completely from the queue. As my Uncle Ben said, with great power comes great responsibility. Expect angry messages if this isn\'t what you meant to do. Also works with `deploy kick _user_` and `deploy sayonara _user_`.\n' +
+      '`deploy current`: Tells you who\'s currently deploying. Also works with `deploy who\'s deploying` and `deploy who\'s at bat`.\n' +
+      '`deploy next`: Sneak peek at the next person in line. Do this if the anticipation is killing you. Also works with `deploy who\'s next` and `deploy who\'s on first`.\n' +
+      '`deploy list`: Lists the queue. Use wisely, it\'s going to ping everyone :)\n' +
+      '`deploy debug`: Kinda like `deploy list`, but for nerds.\n' +
+      '`deploy help`: This thing.'
+    );
+  }
 
   /**
    * Add a user to the queue
@@ -61,7 +80,7 @@ module.exports = function(robot) {
     }
 
     queue.advance();
-    res.reply('thanks');
+    res.reply('Nice job! :tada:');
 
     if (!queue.isEmpty()) {
       // Send DM to next in line if the queue isn't empty
