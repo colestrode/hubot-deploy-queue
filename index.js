@@ -26,7 +26,7 @@ module.exports = function(robot) {
    * @param res
    */
   function help(res) {
-    res.respond(
+    res.reply(
       '`deploy me`: Add yourself to the deploy queue. Hubot give you a heads up when it\'s your turn\n' +
       '`deploy done`: Say this when you\'re done and then Hubot will tell the next person. Or you could say `deploy complete` or `deploy donzo`.\n' +
       '`deploy forget me`: Removes you from the queue. If you\'re on there more than once, then just removes your next turn. If you\'re on there more than once, you might think about slowing down and deploying a little less continuously. Or you could say `deploy forget it` or `deploy nevermind`.\n' +
