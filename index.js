@@ -47,7 +47,7 @@ module.exports = function(robot) {
   function queueUser(res) {
     var user = res.message.user.name
       , length = queue.length()
-      , metadata = res.matches[1];
+      , metadata = res.match[1];
 
     if (queue.contains(user)) {
       res.reply('Whoa, hold you\'re horses! You\'re already in the queue once. Maybe give someone else a chance first?');
