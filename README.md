@@ -4,7 +4,7 @@ Look! It's a deploy queue for Hubot!
 Continuous deploymenting? Not sure if there is a deploy happening _right now_? Use this deploy queue to keep track.
 
 ## Commands
-`deploy add`: Add yourself to the deploy queue. Hubot give you a heads up when it's your turn. You can optionally include metadata if you're into that kind of thing. Something like `hubot deploy add my_api`.
+`deploy add`: Add yourself to the deploy queue. Hubot give you a heads up when it's your turn. Anything after `add` will be included in messages about what you're deploying, if you're into that sort of thing. Something like `hubot deploy add my_api`.
 
 `deploy done`: Say this when you're done and then Hubot will tell the next person. Or you could say `deploy complete` or `deploy donzo`.
 
