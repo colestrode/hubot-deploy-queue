@@ -10,7 +10,7 @@ module.exports = function(robot) {
   });
 
   robot.respond(/deploy help/i, help);
-  robot.respond(/deploy (me|moi)?(.*)/i, queueUser);
+  robot.respond(/deploy (add)?(.*)/i, queueUser);
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
   robot.respond(/deploy (current|who\'s (deploying|at bat))/i, whosDeploying);
   robot.respond(/deploy (next|who\'s (next|on first|on deck))/i, whosNext);
@@ -29,7 +29,7 @@ module.exports = function(robot) {
    */
   function help(res) {
     res.send(
-      '`deploy me`: Add yourself to the deploy queue. Hubot give you a heads up when it\'s your turn\n' +
+      '`deploy add _metadata_`: Add yourself to the deploy queue. Hubot give you a heads up when it\'s your turn. Anything after `add` will be included in messages about what you\'re deploying, if you\'re into that sort of thing. Something like `hubot deploy add my_api`.\n' +
       '`deploy done`: Say this when you\'re done and then Hubot will tell the next person. Or you could say `deploy complete` or `deploy donzo`.\n' +
       '`deploy remove _user_`: Removes a user completely from the queue. Use `remove me` to remove yourself. As my Uncle Ben said, with great power comes great responsibility. Expect angry messages if this isn\'t you remove someone else who isn\'t expecting it. Also works with `deploy kick _user_` and `deploy sayonara _user_`.\n' +
       '`deploy current`: Tells you who\'s currently deploying. Also works with `deploy who\'s deploying` and `deploy who\'s at bat`.\n' +
@@ -47,14 +47,14 @@ module.exports = function(robot) {
   function queueUser(res) {
     var user = res.message.user.name
       , length = queue.length()
-      , what = res.matches[1];
+      , metadata = res.matches[1];
 
     if (queue.contains(user)) {
       res.reply('Whoa, hold you\'re horses! You\'re already in the queue once. Maybe give someone else a chance first?');
       return;
     }
 
-    queue.push({name: user, what: what});
+    queue.push({name: user, metadata: metadata});
 
     if (length === 0 && queue.isCurrent(user)) {
       res.reply('Go for it!');
@@ -110,7 +110,7 @@ module.exports = function(robot) {
       var current = queue.current()
         , message = current.name + ' is deploying';
 
-      message += current.what ? ' ' + current.what : '.';
+      message += current.metadata ? ' ' + current.metadata : '.';
       res.send(message);
     }
   }
