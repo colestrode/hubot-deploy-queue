@@ -10,7 +10,7 @@ module.exports = function(robot) {
   });
 
   robot.respond(/deploy help/i, help);
-  robot.respond(/deploy (add)?(.*)/i, queueUser);
+  robot.respond(/deploy (add)? (.*)/i, queueUser);
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
   robot.respond(/deploy (current|who\'s (deploying|at bat))/i, whosDeploying);
   robot.respond(/deploy (next|who\'s (next|on first|on deck))/i, whosNext);
