@@ -12,7 +12,6 @@ module.exports = function(robot) {
   robot.respond(/deploy help/i, help);
   robot.respond(/deploy (me|moi)?(.*)/i, queueUser);
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
-  robot.respond(/deploy (forget (it|me)|nevermind)/i, forgetMe);
   robot.respond(/deploy (current|who\'s (deploying|at bat))/i, whosDeploying);
   robot.respond(/deploy (next|who\'s (next|on first|on deck))/i, whosNext);
   robot.respond(/deploy (remove|kick|sayonara) (.*)/i, removeUser);
@@ -32,8 +31,7 @@ module.exports = function(robot) {
     res.send(
       '`deploy me`: Add yourself to the deploy queue. Hubot give you a heads up when it\'s your turn\n' +
       '`deploy done`: Say this when you\'re done and then Hubot will tell the next person. Or you could say `deploy complete` or `deploy donzo`.\n' +
-      '`deploy forget me`: Removes you from the queue. If you\'re on there more than once, then just removes your next turn. If you\'re on there more than once, you might think about slowing down and deploying a little less continuously. Or you could say `deploy forget it` or `deploy nevermind`.\n' +
-      '`deploy remove _user_`: Removes a user completely from the queue. As my Uncle Ben said, with great power comes great responsibility. Expect angry messages if this isn\'t what you meant to do. Also works with `deploy kick _user_` and `deploy sayonara _user_`.\n' +
+      '`deploy remove _user_`: Removes a user completely from the queue. Use `remove me` to remove yourself. As my Uncle Ben said, with great power comes great responsibility. Expect angry messages if this isn\'t you remove someone else who isn\'t expecting it. Also works with `deploy kick _user_` and `deploy sayonara _user_`.\n' +
       '`deploy current`: Tells you who\'s currently deploying. Also works with `deploy who\'s deploying` and `deploy who\'s at bat`.\n' +
       '`deploy next`: Sneak peek at the next person in line. Do this if the anticipation is killing you. Also works with `deploy who\'s next` and `deploy who\'s on first`.\n' +
       '`deploy list`: Lists the queue. Use wisely, it\'s going to ping everyone :)\n' +
@@ -162,6 +160,11 @@ module.exports = function(robot) {
   function removeUser(res) {
     var user = res.match[1]
       , notifyNextUser = queue.isCurrent(user);
+
+    if(user === 'me') {
+      forgetMe(res);
+      return;
+    }
 
     queue.removeAll(user);
 
