@@ -1,13 +1,16 @@
-var queue = require('./lib/queue');
+var queue = require('./lib/queue')
+  , _ = require('lodash');
 
 
 module.exports = function(robot) {
   robot.brain.on('loaded', function() {
-    queue.init(robot.brain);
+    robot.brain.deploy = robot.brain.deploy || {};
+
+    queue.init(robot.brain.deploy);
   });
 
   robot.respond(/deploy help/i, help);
-  robot.respond(/deploy (me|moi)/i, queueUser);
+  robot.respond(/deploy (me|moi)?(.*)/i, queueUser);
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
   robot.respond(/deploy (forget (it|me)|nevermind)/i, forgetMe);
   robot.respond(/deploy (current|who\'s (deploying|at bat))/i, whosDeploying);
@@ -45,9 +48,15 @@ module.exports = function(robot) {
    */
   function queueUser(res) {
     var user = res.message.user.name
-      , length = queue.length();
+      , length = queue.length()
+      , what = res.matches[1];
 
-    queue.push(user);
+    if (queue.contains(user)) {
+      res.reply('Whoa, hold you\'re horses! You\'re already in the queue once. Maybe give someone else a chance first?');
+      return;
+    }
+
+    queue.push({name: user, what: what});
 
     if (length === 0 && queue.isCurrent(user)) {
       res.reply('Go for it!');
@@ -100,7 +109,11 @@ module.exports = function(robot) {
     } else if (queue.isCurrent(user)) {
       res.reply('It\'s you. _You\'re_ deploying. Right now.');
     } else {
-      res.send(queue.current() + ' is deploying.');
+      var current = queue.current()
+        , message = current.name + ' is deploying';
+
+      message += current.what ? ' ' + current.what : '.';
+      res.send(message);
     }
   }
 
@@ -137,7 +150,7 @@ module.exports = function(robot) {
       return;
     }
 
-    queue.removeOne(user);
+    queue.remove(user);
     res.reply('Alright, I took you out of the queue. Come back soon!');
 
   }
@@ -167,7 +180,7 @@ module.exports = function(robot) {
     if (queue.isEmpty()) {
       res.send('Nobodyz! Like this: []');
     } else {
-      res.send('Here\'s who\'s in the queue: ' + queue.get().join(', ') + '.');
+      res.send('Here\'s who\'s in the queue: ' + _.pluck(queue.get(), 'name').join(', ') + '.');
     }
   }
 
