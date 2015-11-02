@@ -1,15 +1,17 @@
-var queue = require('./lib/queue');
+var queue = require('./lib/queue')
+  , _ = require('lodash');
 
 
 module.exports = function(robot) {
   robot.brain.on('loaded', function() {
-    queue.init(robot.brain);
+    robot.brain.deploy = robot.brain.deploy || {};
+
+    queue.init(robot.brain.deploy);
   });
 
   robot.respond(/deploy help/i, help);
-  robot.respond(/deploy (me|moi)/i, queueUser);
+  robot.respond(/deploy (me|moi)?(.*)/i, queueUser);
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
-  robot.respond(/deploy (forget (it|me)|nevermind)/i, forgetMe);
   robot.respond(/deploy (current|who\'s (deploying|at bat))/i, whosDeploying);
   robot.respond(/deploy (next|who\'s (next|on first|on deck))/i, whosNext);
   robot.respond(/deploy (remove|kick|sayonara) (.*)/i, removeUser);
@@ -29,8 +31,7 @@ module.exports = function(robot) {
     res.send(
       '`deploy me`: Add yourself to the deploy queue. Hubot give you a heads up when it\'s your turn\n' +
       '`deploy done`: Say this when you\'re done and then Hubot will tell the next person. Or you could say `deploy complete` or `deploy donzo`.\n' +
-      '`deploy forget me`: Removes you from the queue. If you\'re on there more than once, then just removes your next turn. If you\'re on there more than once, you might think about slowing down and deploying a little less continuously. Or you could say `deploy forget it` or `deploy nevermind`.\n' +
-      '`deploy remove _user_`: Removes a user completely from the queue. As my Uncle Ben said, with great power comes great responsibility. Expect angry messages if this isn\'t what you meant to do. Also works with `deploy kick _user_` and `deploy sayonara _user_`.\n' +
+      '`deploy remove _user_`: Removes a user completely from the queue. Use `remove me` to remove yourself. As my Uncle Ben said, with great power comes great responsibility. Expect angry messages if this isn\'t you remove someone else who isn\'t expecting it. Also works with `deploy kick _user_` and `deploy sayonara _user_`.\n' +
       '`deploy current`: Tells you who\'s currently deploying. Also works with `deploy who\'s deploying` and `deploy who\'s at bat`.\n' +
       '`deploy next`: Sneak peek at the next person in line. Do this if the anticipation is killing you. Also works with `deploy who\'s next` and `deploy who\'s on first`.\n' +
       '`deploy list`: Lists the queue. Use wisely, it\'s going to ping everyone :)\n' +
@@ -45,9 +46,15 @@ module.exports = function(robot) {
    */
   function queueUser(res) {
     var user = res.message.user.name
-      , length = queue.length();
+      , length = queue.length()
+      , what = res.matches[1];
 
-    queue.push(user);
+    if (queue.contains(user)) {
+      res.reply('Whoa, hold you\'re horses! You\'re already in the queue once. Maybe give someone else a chance first?');
+      return;
+    }
+
+    queue.push({name: user, what: what});
 
     if (length === 0 && queue.isCurrent(user)) {
       res.reply('Go for it!');
@@ -100,7 +107,11 @@ module.exports = function(robot) {
     } else if (queue.isCurrent(user)) {
       res.reply('It\'s you. _You\'re_ deploying. Right now.');
     } else {
-      res.send(queue.current() + ' is deploying.');
+      var current = queue.current()
+        , message = current.name + ' is deploying';
+
+      message += current.what ? ' ' + current.what : '.';
+      res.send(message);
     }
   }
 
@@ -137,7 +148,7 @@ module.exports = function(robot) {
       return;
     }
 
-    queue.removeOne(user);
+    queue.remove(user);
     res.reply('Alright, I took you out of the queue. Come back soon!');
 
   }
@@ -149,6 +160,11 @@ module.exports = function(robot) {
   function removeUser(res) {
     var user = res.match[1]
       , notifyNextUser = queue.isCurrent(user);
+
+    if (user === 'me') {
+      forgetMe(res);
+      return;
+    }
 
     queue.removeAll(user);
 
@@ -167,7 +183,7 @@ module.exports = function(robot) {
     if (queue.isEmpty()) {
       res.send('Nobodyz! Like this: []');
     } else {
-      res.send('Here\'s who\'s in the queue: ' + queue.get().join(', ') + '.');
+      res.send('Here\'s who\'s in the queue: ' + _.pluck(queue.get(), 'name').join(', ') + '.');
     }
   }
 

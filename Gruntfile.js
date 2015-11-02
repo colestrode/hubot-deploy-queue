@@ -3,6 +3,7 @@
 module.exports = function(grunt) {
   require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
   require('time-grunt')(grunt);
+  grunt.option('reporter', grunt.option('reporter') || 'xunit-file');
 
   grunt.initConfig({
     jscs: {
@@ -26,6 +27,15 @@ module.exports = function(grunt) {
         jshintrc: './.jshintrc',
         ignores: ['Gruntfile.js']
       }
+    },
+    shell: {
+      test: {
+        command: './node_modules/.bin/istanbul cover --report lcov --dir test/reports/  ./node_modules/.bin/_mocha --recursive ./test/ -- --reporter <%= grunt.option("reporter") %> <%= grunt.option("bail") && " --bail" %>',
+        options: {
+          stdout: true,
+          failOnError: true
+        }
+      }
     }
   });
 
@@ -34,5 +44,5 @@ module.exports = function(grunt) {
     'jscs'
   ]);
 
-  grunt.registerTask('test', ['lint']);
+  grunt.registerTask('test', ['lint', 'shell:test']);
 };
