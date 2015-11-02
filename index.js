@@ -161,7 +161,7 @@ module.exports = function(robot) {
     var user = res.match[1]
       , notifyNextUser = queue.isCurrent(user);
 
-    if(user === 'me') {
+    if (user === 'me') {
       forgetMe(res);
       return;
     }
