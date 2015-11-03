@@ -3,7 +3,7 @@
 module.exports = function(grunt) {
   require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
   require('time-grunt')(grunt);
-  grunt.option('reporter', grunt.option('reporter') || 'xunit-file');
+  grunt.option('reporter', grunt.option('reporter') || 'spec');
 
   grunt.initConfig({
     jscs: {
