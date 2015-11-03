@@ -30,7 +30,7 @@ module.exports = function(robot) {
     res.send(
       '`deploy add _metadata_`: Add yourself to the deploy queue. Hubot give you a heads up when it\'s your turn. Anything after `add` will be included in messages about what you\'re deploying, if you\'re into that sort of thing. Something like `hubot deploy add my_api`.\n' +
       '`deploy done`: Say this when you\'re done and then Hubot will tell the next person. Or you could say `deploy complete` or `deploy donzo`.\n' +
-      '`deploy remove _user_`: Removes a user completely from the queue. Use `remove me` to remove yourself. As my Uncle Ben said, with great power comes great responsibility. Expect angry messages if this isn\'t you remove someone else who isn\'t expecting it. Also works with `deploy kick _user_` and `deploy sayonara _user_`.\n' +
+      '`deploy remove _user_`: Removes a user completely from the queue. Use `remove me` to remove yourself. As my Uncle Ben said, with great power comes great responsibility. Expect angry messages if this isn\'t you remove someone else who isn\'t expecting it. Also works with `deploy kick _user_`.\n' +
       '`deploy current`: Tells you who\'s currently deploying. Also works with `deploy who\'s deploying` and `deploy who\'s at bat`.\n' +
       '`deploy next`: Sneak peek at the next person in line. Do this if the anticipation is killing you. Also works with `deploy who\'s next` and `deploy who\'s on first`.\n' +
       '`deploy list`: Lists the queue. Use wisely, it\'s going to ping everyone :)\n' +
@@ -131,10 +131,10 @@ module.exports = function(robot) {
   }
 
   /**
-   * Removes first instance of the user from the queue
+   * Removes current user from the queue
    * @param res
    */
-  function forgetMe(res) {
+  function removeMe(res) {
     var user = res.message.user.name;
 
     if (!queue.contains({name: user})) {
@@ -149,7 +149,6 @@ module.exports = function(robot) {
 
     queue.remove({name: user});
     res.reply('Alright, I took you out of the queue. Come back soon!');
-
   }
 
   /**
@@ -161,7 +160,7 @@ module.exports = function(robot) {
       , notifyNextUser = queue.isCurrent(user);
 
     if (user === 'me') {
-      forgetMe(res);
+      removeMe(res);
       return;
     }
 
@@ -170,7 +169,7 @@ module.exports = function(robot) {
     res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
 
     if (notifyNextUser) {
-      notifyUser(queue.current());
+      notifyUser(queue.current().name);
     }
   }
 
