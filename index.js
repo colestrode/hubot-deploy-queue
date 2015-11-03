@@ -13,7 +13,7 @@ module.exports = function(robot) {
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
   robot.respond(/deploy (current|who\'s (deploying|at bat))/i, whosDeploying);
   robot.respond(/deploy (next|who\'s (next|on first|on deck))/i, whosNext);
-  robot.respond(/deploy (remove|kick|sayonara) (.*)/i, removeUser);
+  robot.respond(/deploy (remove|kick) (.*)/i, removeUser);
   robot.respond(/deploy (list)/i, listQueue);
   robot.respond(/deploy (dump|debug)/i, queueDump);
 
@@ -157,7 +157,7 @@ module.exports = function(robot) {
    * @param res
    */
   function removeUser(res) {
-    var user = res.match[1]
+    var user = res.match[2]
       , notifyNextUser = queue.isCurrent(user);
 
     if (user === 'me') {

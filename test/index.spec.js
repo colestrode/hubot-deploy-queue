@@ -114,5 +114,15 @@ describe('Index', function() {
       expect(resMock.reply.firstCall.args[0]).to.match(/9/);
     });
   });
+
+  describe('remove', function() {
+    it('should remove the specified user', function() {
+      robotMock.respond.withArgs(/deploy (remove|kick) (.*)/i).yields(resMock);
+      resMock.match[1] = 'remove';
+      resMock.match[2] = 'gus';
+      DeployQueue(robotMock);
+      expect(queueMock.remove).to.have.been.calledWithMatch({ name: 'gus' });
+    });
+  });
 });
 
