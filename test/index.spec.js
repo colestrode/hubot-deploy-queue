@@ -116,12 +116,58 @@ describe('Index', function() {
   });
 
   describe('remove', function() {
-    it('should remove the specified user', function() {
+    beforeEach(function() {
       robotMock.respond.withArgs(/deploy (remove|kick) (.*)/i).yields(resMock);
+
       resMock.match[1] = 'remove';
       resMock.match[2] = 'gus';
+    });
+
+    it('should remove the specified user', function() {
       DeployQueue(robotMock);
       expect(queueMock.remove).to.have.been.calledWithMatch({ name: 'gus' });
+      expect(resMock.send.firstCall.args[0]).to.match(/gus has been removed from the queue/);
+    });
+
+    it('should notify the next user', function() {
+      queueMock.isCurrent.returns(true);
+      queueMock.current.returns({name:'heisenberg'});
+
+      DeployQueue(robotMock);
+
+      expect(resMock.send.firstCall.args[0]).to.match(/gus has been removed from the queue/);
+      expect(robotMock.messageRoom).to.have.been.calledWith('heisenberg', 'Hey, you\'re turn to deploy!');
+    });
+
+    describe('remove me', function() {
+
+      beforeEach(function() {
+        resMock.match[2] = 'me';
+      });
+
+      it('should reply if user isn\'t in the queue', function() {
+        queueMock.contains.returns(false);
+        DeployQueue(robotMock);
+
+        expect(resMock.reply.firstCall.args[0]).to.match(/No sweat!/);
+      });
+
+      it('should should not remove user if user is the current user', function() {
+        queueMock.contains.returns(true);
+        queueMock.isCurrent.returns(true);
+        DeployQueue(robotMock);
+
+        expect(resMock.reply.firstCall.args[0]).to.match(/You're deploying right now!/);
+      });
+
+      it('should remove the user from the queue', function() {
+        queueMock.contains.returns(true);
+        queueMock.isCurrent.returns(false);
+        DeployQueue(robotMock);
+
+        expect(queueMock.remove).to.have.been.calledWith({name: 'walterwhite'});
+        expect(resMock.reply.firstCall.args[0]).to.match(/Alright, I took you out of the queue/);
+      });
     });
   });
 });

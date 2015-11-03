@@ -8,7 +8,7 @@ Continuous deploymenting? Not sure if there is a deploy happening _right now_? U
 
 `deploy done`: Say this when you're done and then Hubot will tell the next person. Or you could say `deploy complete` or `deploy donzo`.
 
-`deploy remove <user>`: Removes a user completely from the queue. Use `remove me` to remove yourself. As my Uncle Ben said, with great power comes great responsibility. Expect angry messages if this isn't you remove someone else who isn\'t expecting it. Also works with `deploy kick <user>` and `deploy sayonara <user>`.
+`deploy remove <user>`: Removes a user completely from the queue. Use `remove me` to remove yourself. As my Uncle Ben said, with great power comes great responsibility. Expect angry messages if this isn't you remove someone else who isn\'t expecting it. Also works with `deploy kick <user>`.
 
 `deploy current`: Tells you who's currently deploying. Also works with `deploy who's deploying` and `deploy who's at bat`.
 
