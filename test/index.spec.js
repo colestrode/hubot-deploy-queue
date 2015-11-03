@@ -7,7 +7,7 @@ var chai = require('chai')
 
 chai.use(require('sinon-chai'));
 
-describe.only('Index', function() {
+describe('Index', function() {
   var DeployQueue
     , queueMock
     , BrainMock
@@ -17,7 +17,7 @@ describe.only('Index', function() {
   beforeEach(function() {
     queueMock = {};
 
-    ['init', 'get', 'isEmpty', 'isCurrent', 'isNext', 'contains', 'length', 'current', 'next', 'advance', 'remove'].forEach(function(method) {
+    ['init', 'get', 'isEmpty', 'isCurrent', 'isNext', 'contains', 'length', 'push', 'current', 'next', 'advance', 'remove'].forEach(function(method) {
       queueMock[method] = sinon.stub();
     });
 
@@ -26,7 +26,7 @@ describe.only('Index', function() {
       reply: sinon.stub(),
       message: {
         user: {
-          name: 'heisenberg'
+          name: 'walterwhite'
         }
       },
       match: []
@@ -72,6 +72,47 @@ describe.only('Index', function() {
     DeployQueue(robotMock);
 
     expect(resMock.send.firstCall.args[0]).to.match(/^`deploy add _metadata_`:/);
+  });
+
+  describe('add', function() {
+
+    beforeEach(function() {
+      robotMock.respond.withArgs(/deploy (add) (.*)/i).yields(resMock);
+      queueMock.contains.returns(false);
+    });
+
+    it('should reply if user is already in the queue', function() {
+      queueMock.contains.returns(true);
+      DeployQueue(robotMock);
+      expect(resMock.reply.firstCall.args[0]).to.match(/^Whoa, hold you're horses!/);
+    });
+
+    it('should add metadata', function() {
+      queueMock.length.returns(0);
+      resMock.match[1] = 'heisenberg';
+
+      DeployQueue(robotMock);
+
+      expect(queueMock.push.firstCall.args[0]).to.deep.equal({name: 'walterwhite', metadata: 'heisenberg'});
+    });
+
+    it('should allow a user to deploy immediately if there are no users in the queue', function() {
+      queueMock.length.returns(0);
+      DeployQueue(robotMock);
+      expect(resMock.reply).to.have.been.calledWith('Go for it!');
+    });
+
+    it('should reply if the user is going to be next', function() {
+      queueMock.length.returns(1);
+      DeployQueue(robotMock);
+      expect(resMock.reply).to.have.been.calledWith('Alrighty, you\'re up next!');
+    });
+
+    it('should tell the user how many people are before them if they aren\'t next', function() {
+      queueMock.length.returns(10);
+      DeployQueue(robotMock);
+      expect(resMock.reply.firstCall.args[0]).to.match(/9/);
+    });
   });
 });
 

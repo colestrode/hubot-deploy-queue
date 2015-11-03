@@ -55,12 +55,12 @@ module.exports = function(robot) {
 
     queue.push({name: user, metadata: metadata});
 
-    if (length === 0 && queue.isCurrent(user)) {
+    if (length === 0) {
       res.reply('Go for it!');
       return;
     }
 
-    if (length === 1 && queue.isNext(user)) {
+    if (length === 1) {
       res.reply('Alrighty, you\'re up next!');
       return;
     }
@@ -75,12 +75,12 @@ module.exports = function(robot) {
   function dequeueUser(res) {
     var user = res.message.user.name;
 
-    if (!queue.contains(user)) {
+    if (!queue.contains({name: user})) {
       res.reply('Ummm, this is a little embarrassing, but you aren\'t in the queue :grimacing:');
       return;
     }
 
-    if (!queue.isCurrent(user)) {
+    if (!queue.isCurrent({name: user})) {
       res.reply('Nice try, but it\'s not your turn yet');
       return;
     }
@@ -103,7 +103,7 @@ module.exports = function(robot) {
 
     if (queue.isEmpty()) {
       res.reply('Nobodyz!');
-    } else if (queue.isCurrent(user)) {
+    } else if (queue.isCurrent({name: user})) {
       res.reply('It\'s you. _You\'re_ deploying. Right now.');
     } else {
       var current = queue.current()
@@ -123,7 +123,7 @@ module.exports = function(robot) {
 
     if (queue.isEmpty()) {
       res.send('Nobodyz!');
-    } else if (queue.isNext(user)) {
+    } else if (queue.isNext({name: user})) {
       res.reply('You\'re up next! Get ready!');
     } else {
       res.send(queue.next() + ' is on deck.');
@@ -137,17 +137,17 @@ module.exports = function(robot) {
   function forgetMe(res) {
     var user = res.message.user.name;
 
-    if (!queue.contains(user)) {
+    if (!queue.contains({name: user})) {
       res.reply('No sweat! You weren\'t even in the queue :)');
       return;
     }
 
-    if (queue.isCurrent(user)) {
+    if (queue.isCurrent({name: user})) {
       res.reply('You\'re deploying right now! Did you mean `deploy done`?');
       return;
     }
 
-    queue.remove(user);
+    queue.remove({name: user});
     res.reply('Alright, I took you out of the queue. Come back soon!');
 
   }
@@ -165,7 +165,7 @@ module.exports = function(robot) {
       return;
     }
 
-    queue.removeAll(user);
+    queue.remove({name: user});
 
     res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
 
