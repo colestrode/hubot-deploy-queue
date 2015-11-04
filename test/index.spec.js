@@ -77,7 +77,7 @@ describe('Index', function() {
   describe('add', function() {
 
     beforeEach(function() {
-      robotMock.respond.withArgs(/deploy (add) (.*)/i).yields(resMock);
+      robotMock.respond.withArgs(/deploy (add)(.*)?/i).yields(resMock);
       queueMock.contains.returns(false);
     });
 
@@ -112,6 +112,35 @@ describe('Index', function() {
       queueMock.length.returns(10);
       DeployQueue(robotMock);
       expect(resMock.reply.firstCall.args[0]).to.match(/9/);
+    });
+  });
+
+  describe('next', function() {
+
+    beforeEach(function() {
+      robotMock.respond.withArgs(/deploy (next|who\'s (next|on first|on deck))/i).yields(resMock);
+    });
+
+    it('should respond if there is no next', function() {
+      queueMock.next.returns(undefined);
+      DeployQueue(robotMock);
+      expect(resMock.send).to.have.been.calledWith('Nobodyz!');
+    });
+
+    it('should respond if the current user is next', function() {
+      queueMock.next.returns({name: 'heisenberg'});
+      queueMock.isNext.returns(true);
+
+      DeployQueue(robotMock);
+      expect(resMock.reply).to.have.been.calledWith('You\'re up next! Get ready!');
+    });
+
+    it('should respond if someone else is on deck', function() {
+      queueMock.next.returns({name: 'capncook'});
+      queueMock.isNext.returns(false);
+
+      DeployQueue(robotMock);
+      expect(resMock.send).to.have.been.calledWith('capncook is on deck.');
     });
   });
 
