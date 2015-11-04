@@ -132,42 +132,35 @@ module.exports = function(robot) {
   }
 
   /**
-   * Removes current user from the queue
+   * Removes all references to a user from the queue
    * @param res
    */
-  function removeMe(res) {
-    var user = res.message.user.name;
+  function removeUser(res) {
+    /* jshint maxcomplexity:7 */
+    var isMe = (res.match[2] === 'me')
+      , user = isMe ? res.message.user.name : res.match[2]
+      , isCurrent = queue.isCurrent({name: user})
+      , notifyNextUser = isCurrent && queue.length() > 1;
 
     if (!queue.contains({name: user})) {
-      res.reply('No sweat! You weren\'t even in the queue :)');
+      if (isMe) {
+        res.reply('No sweat! You weren\'t even in the queue :)');
+      } else {
+        res.send(user + ' isn\'t in the queue :)');
+      }
       return;
-    }
-
-    if (queue.isCurrent({name: user})) {
+    } else if (isMe && queue.isCurrent({name: user})) {
       res.reply('You\'re deploying right now! Did you mean `deploy done`?');
       return;
     }
 
     queue.remove({name: user});
-    res.reply('Alright, I took you out of the queue. Come back soon!');
-  }
 
-  /**
-   * Removes all references to a user from the queue
-   * @param res
-   */
-  function removeUser(res) {
-    var user = res.match[2]
-      , notifyNextUser = queue.isCurrent(user);
-
-    if (user === 'me') {
-      removeMe(res);
-      return;
+    if (isMe) {
+      res.reply('Alright, I took you out of the queue. Come back soon!');
+    } else {
+      res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
     }
-
-    queue.remove({name: user});
-
-    res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
 
     if (notifyNextUser) {
       notifyUser(queue.current());
