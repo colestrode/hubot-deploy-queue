@@ -137,34 +137,44 @@ module.exports = function(robot) {
    */
   function removeUser(res) {
     /* jshint maxcomplexity:7 */
-    var isMe = (res.match[2] === 'me')
-      , user = isMe ? res.message.user.name : res.match[2]
+    var user = res.match[2]
       , isCurrent = queue.isCurrent({name: user})
       , notifyNextUser = isCurrent && queue.length() > 1;
 
-    if (!queue.contains({name: user})) {
-      if (isMe) {
-        res.reply('No sweat! You weren\'t even in the queue :)');
-      } else {
-        res.send(user + ' isn\'t in the queue :)');
-      }
+    if (user === 'me') {
+      removeMe(res);
       return;
-    } else if (isMe && queue.isCurrent({name: user})) {
+    }
+
+    if (!queue.contains({name: user})) {
+      res.send(user + ' isn\'t in the queue :)');
+      return;
+    }
+
+    queue.remove({name: user});
+    res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
+
+    if (notifyNextUser) {
+      notifyUser(queue.current());
+    }
+  }
+
+  /**
+   * Removes the current user from the queue IF the user is not at the head.
+   * @param res
+   */
+  function removeMe(res) {
+    var user = res.message.user.name;
+
+    if (!queue.contains({name: user})) {
+      res.reply('No sweat! You weren\'t even in the queue :)');
+    } else if (queue.isCurrent({name: user})) {
       res.reply('You\'re deploying right now! Did you mean `deploy done`?');
       return;
     }
 
     queue.remove({name: user});
-
-    if (isMe) {
-      res.reply('Alright, I took you out of the queue. Come back soon!');
-    } else {
-      res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
-    }
-
-    if (notifyNextUser) {
-      notifyUser(queue.current());
-    }
+    res.reply('Alright, I took you out of the queue. Come back soon!');
   }
 
   /**
