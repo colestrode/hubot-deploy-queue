@@ -9,7 +9,7 @@ module.exports = function(robot) {
   });
 
   robot.respond(/deploy help/i, help);
-  robot.respond(/deploy (add) (.*)/i, queueUser);
+  robot.respond(/deploy (add)(.*)?/i, queueUser);
   robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
   robot.respond(/deploy (current|who\'s (deploying|at bat))/i, whosDeploying);
   robot.respond(/deploy (next|who\'s (next|on first|on deck))/i, whosNext);
@@ -119,14 +119,15 @@ module.exports = function(robot) {
    * @param res
    */
   function whosNext(res) {
-    var user = res.message.user.name;
+    var user = res.message.user.name
+      , next = queue.next();
 
-    if (queue.isEmpty()) {
+    if (!next) {
       res.send('Nobodyz!');
     } else if (queue.isNext({name: user})) {
       res.reply('You\'re up next! Get ready!');
     } else {
-      res.send(queue.next() + ' is on deck.');
+      res.send(queue.next().name + ' is on deck.');
     }
   }
 
