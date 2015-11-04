@@ -170,7 +170,7 @@ module.exports = function(robot) {
     res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
 
     if (notifyNextUser) {
-      notifyUser(queue.current().name);
+      notifyUser(queue.current());
     }
   }
 
@@ -199,7 +199,7 @@ module.exports = function(robot) {
    * @param user
    */
   function notifyUser(user) {
-    robot.messageRoom(user, 'Hey, you\'re turn to deploy!');
+    robot.messageRoom(user.name, 'Hey, you\'re turn to deploy!');
   }
 };
 
