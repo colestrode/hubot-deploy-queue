@@ -84,6 +84,7 @@ describe('Index', function() {
     it('should reply if user is already in the queue', function() {
       queueMock.contains.returns(true);
       DeployQueue(robotMock);
+      expect(queueMock.contains).to.be.calledWith({name: 'walterwhite'});
       expect(resMock.reply.firstCall.args[0]).to.match(/^Whoa, hold you're horses!/);
     });
 
@@ -112,6 +113,50 @@ describe('Index', function() {
       queueMock.length.returns(10);
       DeployQueue(robotMock);
       expect(resMock.reply.firstCall.args[0]).to.match(/9/);
+    });
+  });
+
+  describe('done', function() {
+    beforeEach(function() {
+      robotMock.respond.withArgs(/deploy (done|complete|donzo)/i).yields(resMock);
+    });
+
+    it('should not remove a user if they aren\'t in the queue', function() {
+      queueMock.contains.returns(false);
+      DeployQueue(robotMock);
+      expect(queueMock.contains).to.be.calledWith({name:'walterwhite'});
+      expect(resMock.reply.firstCall.args[0]).to.match(/Ummm, this is a little embarrassing/);
+    });
+
+    it('should reply if the user isn\'t at the head of the queue', function() {
+      queueMock.contains.returns(true);
+      queueMock.isCurrent.returns(false);
+      DeployQueue(robotMock);
+      expect(queueMock.isCurrent).to.be.calledWith({name:'walterwhite'});
+      expect(resMock.reply.firstCall.args[0]).to.match(/Nice try/);
+    });
+
+    it('should advance the queue and notify the next user', function() {
+      queueMock.contains.returns(true);
+      queueMock.isCurrent.returns(true);
+      queueMock.isEmpty.returns(false);
+      queueMock.current.returns({name:'jessepinkman'});
+
+      DeployQueue(robotMock);
+      expect(queueMock.advance).to.be.called;
+      expect(resMock.reply.firstCall.args[0]).to.match(/Nice job!/);
+      expect(robotMock.messageRoom).to.have.been.calledWithMatch('jessepinkman');
+    });
+
+    it('should advance the queue and not notify if there is no next', function() {
+      queueMock.contains.returns(true);
+      queueMock.isCurrent.returns(true);
+      queueMock.isEmpty.returns(true);
+
+      DeployQueue(robotMock);
+      expect(queueMock.advance).to.be.called;
+      expect(resMock.reply.firstCall.args[0]).to.match(/Nice job!/);
+      expect(robotMock.messageRoom).not.to.have.been.called;
     });
   });
 
