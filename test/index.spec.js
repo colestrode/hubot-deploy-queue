@@ -84,6 +84,7 @@ describe('Index', function() {
     it('should reply if user is already in the queue', function() {
       queueMock.contains.returns(true);
       DeployQueue(robotMock);
+      expect(queueMock.contains).to.be.calledWith({name: 'walterwhite'});
       expect(resMock.reply.firstCall.args[0]).to.match(/^Whoa, hold you're horses!/);
     });
 
