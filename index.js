@@ -137,22 +137,23 @@ module.exports = function(robot) {
    */
   function removeUser(res) {
     /* jshint maxcomplexity:7 */
-    var user = res.match[2]
-      , isCurrent = queue.isCurrent({name: user})
+    var name = res.match[2]
+      , user = {name: name}
+      , isCurrent = queue.isCurrent(user)
       , notifyNextUser = isCurrent && queue.length() > 1;
 
-    if (user === 'me') {
+    if (name === 'me') {
       removeMe(res);
       return;
     }
 
-    if (!queue.contains({name: user})) {
-      res.send(user + ' isn\'t in the queue :)');
+    if (!queue.contains(user)) {
+      res.send(name + ' isn\'t in the queue :)');
       return;
     }
 
-    queue.remove({name: user});
-    res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
+    queue.remove(user);
+    res.send(name + ' has been removed from the queue. I hope that\'s what you meant to do...');
 
     if (notifyNextUser) {
       notifyUser(queue.current());
@@ -164,16 +165,17 @@ module.exports = function(robot) {
    * @param res
    */
   function removeMe(res) {
-    var user = res.message.user.name;
+    var name = res.message.user.name
+      , user = {name: name};
 
-    if (!queue.contains({name: user})) {
+    if (!queue.contains(user)) {
       res.reply('No sweat! You weren\'t even in the queue :)');
-    } else if (queue.isCurrent({name: user})) {
+    } else if (queue.isCurrent(user)) {
       res.reply('You\'re deploying right now! Did you mean `deploy done`?');
       return;
     }
 
-    queue.remove({name: user});
+    queue.remove(user);
     res.reply('Alright, I took you out of the queue. Come back soon!');
   }
 
