@@ -132,46 +132,50 @@ module.exports = function(robot) {
   }
 
   /**
-   * Removes current user from the queue
-   * @param res
-   */
-  function removeMe(res) {
-    var user = res.message.user.name;
-
-    if (!queue.contains({name: user})) {
-      res.reply('No sweat! You weren\'t even in the queue :)');
-      return;
-    }
-
-    if (queue.isCurrent({name: user})) {
-      res.reply('You\'re deploying right now! Did you mean `deploy done`?');
-      return;
-    }
-
-    queue.remove({name: user});
-    res.reply('Alright, I took you out of the queue. Come back soon!');
-  }
-
-  /**
    * Removes all references to a user from the queue
    * @param res
    */
   function removeUser(res) {
-    var user = res.match[2]
-      , notifyNextUser = queue.isCurrent(user);
+    var name = res.match[2]
+      , user = {name: name}
+      , isCurrent = queue.isCurrent(user)
+      , notifyNextUser = isCurrent && queue.length() > 1;
 
-    if (user === 'me') {
+    if (name === 'me') {
       removeMe(res);
       return;
     }
 
-    queue.remove({name: user});
+    if (!queue.contains(user)) {
+      res.send(name + ' isn\'t in the queue :)');
+      return;
+    }
 
-    res.send(user + ' has been removed from the queue. I hope that\'s what you meant to do...');
+    queue.remove(user);
+    res.send(name + ' has been removed from the queue. I hope that\'s what you meant to do...');
 
     if (notifyNextUser) {
       notifyUser(queue.current());
     }
+  }
+
+  /**
+   * Removes the current user from the queue IF the user is not at the head.
+   * @param res
+   */
+  function removeMe(res) {
+    var name = res.message.user.name
+      , user = {name: name};
+
+    if (!queue.contains(user)) {
+      res.reply('No sweat! You weren\'t even in the queue :)');
+    } else if (queue.isCurrent(user)) {
+      res.reply('You\'re deploying right now! Did you mean `deploy done`?');
+      return;
+    }
+
+    queue.remove(user);
+    res.reply('Alright, I took you out of the queue. Come back soon!');
   }
 
   /**
