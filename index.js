@@ -136,7 +136,6 @@ module.exports = function(robot) {
    * @param res
    */
   function removeUser(res) {
-    /* jshint maxcomplexity:7 */
     var name = res.match[2]
       , user = {name: name}
       , isCurrent = queue.isCurrent(user)
