@@ -90,7 +90,7 @@ describe('Index', function() {
 
     it('should add metadata', function() {
       queueMock.length.returns(0);
-      resMock.match[1] = 'heisenberg';
+      resMock.match[2] = ' heisenberg ';
 
       DeployQueue(robotMock);
 
