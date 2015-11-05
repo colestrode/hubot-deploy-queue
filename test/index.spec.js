@@ -160,6 +160,52 @@ describe('Index', function() {
     });
   });
 
+  describe('current', function() {
+
+    beforeEach(function() {
+      robotMock.respond.withArgs(/deploy (current|who\'s (deploying|at bat))/i).yields(resMock);
+    });
+
+    it('should send if nobody if deploying', function() {
+      queueMock.isEmpty.returns(true);
+      DeployQueue(robotMock);
+      expect(resMock.send).to.be.calledWith('Nobodyz!');
+    });
+
+    it('should reply if the current user is deploying', function() {
+      queueMock.isEmpty.returns(false);
+      queueMock.isCurrent.returns(true);
+
+      DeployQueue(robotMock);
+
+      expect(queueMock.isCurrent).to.be.calledWith({name: 'walterwhite'});
+      expect(resMock.reply).to.be.calledWith('It\'s you. _You\'re_ deploying. Right now.');
+    });
+
+    it('should send about the current user with metadata', function() {
+      queueMock.isEmpty.returns(false);
+      queueMock.isCurrent.returns(false);
+      queueMock.current.returns({name: 'gus', metadata: 'blue sky'});
+
+      DeployQueue(robotMock);
+
+      expect(queueMock.isCurrent).to.be.calledWith({name: 'walterwhite'});
+      expect(resMock.send).to.be.calledWith('gus is deploying blue sky');
+    });
+
+    it('should send about the current user without metadata', function() {
+      queueMock.isEmpty.returns(false);
+      queueMock.isCurrent.returns(false);
+      queueMock.current.returns({name: 'gus'});
+
+      DeployQueue(robotMock);
+
+      expect(queueMock.isCurrent).to.be.calledWith({name: 'walterwhite'});
+      expect(resMock.send).to.be.calledWith('gus is deploying.');
+    });
+
+  });
+
   describe('next', function() {
 
     beforeEach(function() {
@@ -290,6 +336,50 @@ describe('Index', function() {
         expect(queueMock.current).not.to.have.been.called;
         expect(robotMock.messageRoom).not.to.have.been.called;
       });
+    });
+  });
+
+  describe('list', function() {
+
+    beforeEach(function() {
+      robotMock.respond.withArgs(/deploy (list)/i).yields(resMock);
+    });
+
+    it('should send if queue is empty', function() {
+      queueMock.isEmpty.returns(true);
+      DeployQueue(robotMock);
+      expect(resMock.send).to.have.been.calledWith('Nobodyz! Like this: []')
+    });
+
+    it('should send if there is something in the queue', function() {
+      var queue = [{name: 'walterwhite'}, {name: 'jessepinkman'}];
+
+      queueMock.isEmpty.returns(false);
+      queueMock.get.returns(queue);
+
+      DeployQueue(robotMock);
+
+      expect(resMock.send).to.have.been.calledWith('Here\'s who\'s in the queue: walterwhite, jessepinkman.');
+    });
+  });
+
+  describe('dump', function() {
+
+    beforeEach(function() {
+      robotMock.respond.withArgs(/deploy (dump|debug)/i).yields(resMock);
+    });
+
+    it('should print out the queue in a pretty nice way', function() {
+      var queue = [
+        {name: 'walterwhite', metadata: 'heisenberg'},
+        {name: 'jessepinkman', metadata: 'capncook'}
+      ];
+
+      queueMock.get.returns(queue);
+      DeployQueue(robotMock);
+
+      expect(queueMock.get).to.have.been.called;
+      expect(resMock.send).to.have.been.calledWith(JSON.stringify(queue, null, 2));
     });
   });
 });

@@ -99,11 +99,12 @@ module.exports = function(robot) {
    * @param res
    */
   function whosDeploying(res) {
-    var user = res.message.user.name;
+    var name = res.message.user.name
+      , user = {name: name};
 
     if (queue.isEmpty()) {
-      res.reply('Nobodyz!');
-    } else if (queue.isCurrent({name: user})) {
+      res.send('Nobodyz!');
+    } else if (queue.isCurrent(user)) {
       res.reply('It\'s you. _You\'re_ deploying. Right now.');
     } else {
       var current = queue.current()
