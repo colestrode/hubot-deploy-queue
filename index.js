@@ -185,13 +185,13 @@ module.exports = function(robot) {
     if (queue.isEmpty()) {
       res.send('Nobodyz! Like this: []');
     } else {
-      res.send('Here\'s who\'s in the queue: \n');
+      res.send('Here\'s who\'s in the queue:');
       for (var x = 0; x < queue.get().length; x++) {
         var item = queue.get()[x];
-        if (item.metadata !== '') {
-          res.send('' + item.name + ' with ' + item.metadata + '. \n');
+        if (item.metadata !== undefined) {
+          res.send(item.name + ' with ' + item.metadata + '.');
         } else {
-          res.send('' + item.name + '. \n');
+          res.send(item.name + '.');
         }
       }
     }
