@@ -1,6 +1,4 @@
-var queue = require('./lib/queue')
-  , _ = require('lodash');
-
+var queue = require('./lib/queue');
 
 module.exports = function(robot) {
   robot.brain.on('loaded', function() {
@@ -186,11 +184,11 @@ module.exports = function(robot) {
   function listQueue(res) {
     if (queue.isEmpty()) {
       res.send('Nobodyz! Like this: []');
-      } else {
+    } else {
       res.send('Here\'s who\'s in the queue: \n');
-      for(var x=0; x < queue.get().length; x++){
-        var item = queue.get()[x]
-        if (item.metadata !== ''){
+      for (var x = 0; x < queue.get().length; x++) {
+        var item = queue.get()[x];
+        if (item.metadata !== '') {
           res.send('' + item.name + ' with ' + item.metadata + '. \n');
         } else {
           res.send('' + item.name + '. \n');
