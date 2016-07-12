@@ -352,14 +352,16 @@ describe('Index', function() {
     });
 
     it('should send if there is something in the queue', function() {
-      var queue = [{name: 'walterwhite'}, {name: 'jessepinkman'}];
+        var queue = [{name: 'walterwhite', metadata: 'heisenberg'}, {name: 'jessepinkman'}];
 
       queueMock.isEmpty.returns(false);
       queueMock.get.returns(queue);
 
       DeployQueue(robotMock);
 
-      expect(resMock.send).to.have.been.calledWith('Here\'s who\'s in the queue: walterwhite, jessepinkman.');
+      expect(resMock.send).to.have.been.calledWith('Here\'s who\'s in the queue:');
+      expect(resMock.send).to.have.been.calledWith('walterwhite with heisenberg.');
+      expect(resMock.send).to.have.been.calledWith('jessepinkman.');                
     });
   });
 
