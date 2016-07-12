@@ -187,7 +187,11 @@ module.exports = function(robot) {
     if (queue.isEmpty()) {
       res.send('Nobodyz! Like this: []');
     } else {
-      res.send('Here\'s who\'s in the queue: ' + _.pluck(queue.get(), 'name').join(', ') + '.');
+      if (_.pluck(queue.get(), 'metadata') != ''){
+        res.send('Here\'s who\'s in the queue: ' + _.pluck(queue.get(), 'name') + ' with ' + _.pluck(queue.get(), 'metadata').join('\n'));
+      } else {
+        res.send('Here\'s who\'s in the queue: ' + _.pluck(queue.get(), 'name').join(', ') + '.');
+      }
     }
   }
 
