@@ -85,7 +85,7 @@ describe('Index', function() {
       queueMock.contains.returns(true);
       DeployQueue(robotMock);
       expect(queueMock.contains).to.be.calledWith({name: 'walterwhite'});
-      expect(resMock.reply.firstCall.args[0]).to.match(/^Whoa, hold you're horses!/);
+      expect(resMock.reply.firstCall.args[0]).to.match(/^Sorry but you can only have one position in the queue at a time/);
     });
 
     it('should add metadata', function() {
@@ -268,7 +268,7 @@ describe('Index', function() {
       expect(queueMock.isCurrent).to.have.been.calledWith({ name: 'gus' });
       expect(queueMock.remove).to.have.been.calledWith({ name: 'gus' });
       expect(resMock.send.firstCall.args[0]).to.match(/gus has been removed from the queue/);
-      expect(robotMock.messageRoom).to.have.been.calledWith('heisenberg', 'Hey, you\'re turn to deploy!');
+      expect(robotMock.messageRoom).to.have.been.calledWith('heisenberg', 'Hey, your turn to deploy!');
     });
 
     it('should remove the specified user and not notify the next user if the list is empty', function() {

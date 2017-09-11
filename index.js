@@ -49,7 +49,7 @@ module.exports = function(robot) {
       , metadata = (res.match[2] || '').trim();
 
     if (queue.contains({name: user})) {
-      res.reply('Whoa, hold you\'re horses! You\'re already in the queue once. Maybe give someone else a chance first?');
+      res.reply('Sorry but you can only have one position in the queue at a time. Please complete your first deploy before requeueing yourself.');
       return;
     }
 
@@ -204,7 +204,7 @@ module.exports = function(robot) {
    * @param user
    */
   function notifyUser(user) {
-    robot.messageRoom(user.name, 'Hey, you\'re turn to deploy!');
+    robot.messageRoom(user.name, 'Hey, your turn to deploy!');
   }
 };
 
