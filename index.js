@@ -10,7 +10,7 @@ module.exports = function(robot) {
 
   robot.respond(/deploy help/i, help);
   robot.respond(/deploy (add)(.*)?/i, queueUser);
-  robot.respond(/deploy (done|complete|donzo)/i, dequeueUser);
+  robot.respond(/deploy (done|complete|donezo)/i, dequeueUser);
   robot.respond(/deploy (current|who\'s (deploying|at bat))/i, whosDeploying);
   robot.respond(/deploy (next|who\'s (next|on first|on deck))/i, whosNext);
   robot.respond(/deploy (remove|kick) (.*)/i, removeUser);
@@ -29,7 +29,7 @@ module.exports = function(robot) {
   function help(res) {
     res.send(
       '`deploy add _metadata_`: Add yourself to the deploy queue. Hubot give you a heads up when it\'s your turn. Anything after `add` will be included in messages about what you\'re deploying, if you\'re into that sort of thing. Something like `hubot deploy add my_api`.\n' +
-      '`deploy done`: Say this when you\'re done and then Hubot will tell the next person. Or you could say `deploy complete` or `deploy donzo`.\n' +
+      '`deploy done`: Say this when you\'re done and then Hubot will tell the next person. Or you could say `deploy complete` or `deploy donezo`.\n' +
       '`deploy remove _user_`: Removes a user completely from the queue. Use `remove me` to remove yourself. As my Uncle Ben said, with great power comes great responsibility. Expect angry messages if this isn\'t you remove someone else who isn\'t expecting it. Also works with `deploy kick _user_`.\n' +
       '`deploy current`: Tells you who\'s currently deploying. Also works with `deploy who\'s deploying` and `deploy who\'s at bat`.\n' +
       '`deploy next`: Sneak peek at the next person in line. Do this if the anticipation is killing you. Also works with `deploy who\'s next` and `deploy who\'s on first`.\n' +
@@ -49,7 +49,7 @@ module.exports = function(robot) {
       , metadata = (res.match[2] || '').trim();
 
     if (queue.contains({name: user})) {
-      res.reply('Whoa, hold you\'re horses! You\'re already in the queue once. Maybe give someone else a chance first?');
+      res.reply('Sorry but you can only have one position in the queue at a time. Please complete your first deploy before requeueing yourself.');
       return;
     }
 
@@ -204,7 +204,7 @@ module.exports = function(robot) {
    * @param user
    */
   function notifyUser(user) {
-    robot.messageRoom(user.name, 'Hey, you\'re turn to deploy!');
+    robot.messageRoom(user.name, 'Hey, your turn to deploy!');
   }
 };
 
