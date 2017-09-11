@@ -118,7 +118,7 @@ describe('Index', function() {
 
   describe('done', function() {
     beforeEach(function() {
-      robotMock.respond.withArgs(/deploy (done|complete|donzo)/i).yields(resMock);
+      robotMock.respond.withArgs(/deploy (done|complete|donezo)/i).yields(resMock);
     });
 
     it('should not remove a user if they aren\'t in the queue', function() {
