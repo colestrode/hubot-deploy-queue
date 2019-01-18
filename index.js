@@ -4,8 +4,8 @@ var queue = require('./lib/queue')
 
 module.exports = function(robot) {
   robot.brain.on('loaded', function() {
-    robot.brain.deploy = robot.brain.deploy || {};
-    queue.init(robot.brain.deploy);
+    robot.brain.data.deploy = robot.brain.data.deploy || {};
+    queue.init(robot.brain.data.deploy);
   });
 
   robot.respond(/deploy help/i, help);
@@ -49,7 +49,7 @@ module.exports = function(robot) {
       , metadata = (res.match[2] || '').trim();
 
     if (queue.contains({name: user})) {
-      res.reply('Whoa, hold you\'re horses! You\'re already in the queue once. Maybe give someone else a chance first?');
+      res.reply('Sorry but you can only have one position in the queue at a time. Please complete your first deploy before requeueing yourself.');
       return;
     }
 
@@ -61,7 +61,7 @@ module.exports = function(robot) {
     }
 
     if (length === 1) {
-      res.reply('Alrighty, you\'re up next!');
+      res.reply('Alrighty, you\'re up after current deployer.');
       return;
     }
 
@@ -185,7 +185,7 @@ module.exports = function(robot) {
    */
   function listQueue(res) {
     if (queue.isEmpty()) {
-      res.send('Nobodyz! Like this: []');
+      res.send('Nobody! Like this: []');
     } else {
       res.send('Here\'s who\'s in the queue: ' + _.pluck(queue.get(), 'name').join(', ') + '.');
     }
@@ -204,7 +204,7 @@ module.exports = function(robot) {
    * @param user
    */
   function notifyUser(user) {
-    robot.messageRoom(user.name, 'Hey, you\'re turn to deploy!');
+    robot.messageRoom(user.name, 'Hey, your turn to deploy!');
   }
 };
 
