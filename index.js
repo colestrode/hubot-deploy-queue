@@ -54,15 +54,11 @@ module.exports = function(robot) {
 
     if (length === 0) {
       res.reply('Go for it!');
-      return;
-    }
-
-    if (length === 1) {
+    } else if (length === 1) {
       res.reply('Alrighty, you\'re up after current deployer.');
-      return;
+    } else {
+      res.reply('There\'s ' + length + ' people ahead of you. I\'ll let you know when you\'re up.');
     }
-
-    res.reply('There\'s ' + (length - 1) + ' person(s) ahead of you. I\'ll let you know when you\'re up.');
   }
 
   /**
@@ -169,11 +165,10 @@ module.exports = function(robot) {
       res.reply('No sweat! You weren\'t even in the queue :)');
     } else if (queue.isCurrent(user)) {
       res.reply('You\'re deploying right now! Did you mean `deploy done`?');
-      return;
+    } else {
+      queue.remove(user);
+      res.reply('Alright, I took you out of the queue. Come back soon!');
     }
-
-    queue.remove(user);
-    res.reply('Alright, I took you out of the queue. Come back soon!');
   }
 
   /**
@@ -204,4 +199,3 @@ module.exports = function(robot) {
     robot.messageRoom(user.name, 'Hey, your turn to deploy!');
   }
 };
-
