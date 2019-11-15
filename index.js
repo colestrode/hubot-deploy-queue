@@ -42,22 +42,22 @@ module.exports = function(robot) {
    */
   function queueUser(res) {
     var user = res.message.user.name
-      , length = queue.length()
       , metadata = (res.match[2] || '').trim();
-
-    if (queue.contains({name: user})) {
-      res.reply('Sorry but you can only have one position in the queue at a time. Please complete your first deploy before requeueing yourself.');
-      return;
-    }
 
     queue.push({name: user, metadata: metadata});
 
-    if (length === 0) {
+    var length = queue.length();
+    var isCurrent = queue.isCurrent({ name: user });
+    var grouped = firstGroup();
+
+    if (length === 1) {
       res.reply('Go for it!');
-    } else if (length === 1) {
+    } else if (length === 2 && !isCurrent) {
       res.reply('Alrighty, you\'re up after current deployer.');
+    } else if (isCurrent && length == grouped.length) {
+      res.reply('Ok! You are now deploying ' + grouped.length + ' things in a row.');
     } else {
-      res.reply('There\'s ' + length + ' people ahead of you. I\'ll let you know when you\'re up.');
+      res.reply('There\'s ' + (length - 1) + ' things to deploy in the queue ahead of you. I\'ll let you know when you\'re up.');
     }
   }
 
@@ -79,10 +79,16 @@ module.exports = function(robot) {
     }
 
     queue.advance();
-    res.reply('Nice job! :tada:');
+    var grouped = firstGroup();
 
-    if (!queue.isEmpty()) {
-      // Send DM to next in line if the queue isn't empty
+    if (isCurrent(user)) {
+      res.reply('Nice! Only ' + grouped.length + ' more to go!' + getRandomReaction())
+    } else {
+      res.reply('Nice job! :tada:');
+    }
+
+    if (!queue.isEmpty() && !isCurrent(user)) {
+      // Send DM to next in line if the queue isn't empty and it's not the person who just finished deploying.
       notifyUser(queue.current());
     }
   }
@@ -103,7 +109,14 @@ module.exports = function(robot) {
       var current = queue.current()
         , message = current.name + ' is deploying';
 
-      message += current.metadata ? ' ' + current.metadata : '.';
+      var grouped = firstGroup();
+
+      if (grouped.length === 1) {
+        message += current.metadata ? ' ' + current.metadata : '.';
+      } else {
+        message += ' ' + grouped.length + ' items.';
+      }
+
       res.send(message);
     }
   }
@@ -119,7 +132,7 @@ module.exports = function(robot) {
     if (!next) {
       res.send('Nobody!');
     } else if (queue.isNext({name: user})) {
-      res.reply('You\'re up next! Get ready!');
+      res.reply('You\'re up next!');
     } else {
       res.send(queue.next().name + ' is next.');
     }
@@ -192,10 +205,36 @@ module.exports = function(robot) {
   }
 
   /**
+   * Get a list of all the items at the beginning of the queue for a given user.
+   */
+  function firstGroup() {
+    var group = [];
+    var last = db.queue[0];
+    var index = 0;
+    while (index < db.queue.length) {
+      var next = db.queue[index + 1];
+      if (next && next.name === last.name) {
+        group.push(next);
+        last = next;
+        index += 1;
+      } else {
+        break;
+      }
+    }
+
+    return group;
+  }
+
+  /**
    * Notify a user via DM that it's their turn
    * @param user
    */
   function notifyUser(user) {
-    robot.messageRoom(user.name, 'Hey, your turn to deploy!');
+    robot.messageRoom(user.name, 'Hey, it\'s your turn to deploy!');
+  }
+
+  function getRandomReaction() {
+    const reactions = [':smart:', ':rocket:', ':hyperclap:', ':confetti_ball:'];
+    return reactions[Math.floor(Math.random() * reactions.length)];
   }
 };
